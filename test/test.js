@@ -101,6 +101,21 @@ describe('loopback db migrate', function() {
     });
 
     describe('up', function() {
+      it('should callback when there a no migrations to run', function(done) {
+        var self = this;
+        var previousDir = app.models.Migration.migrationsDir;
+        app.models.Migration.migrationsDir = path.join(previousDir, '..', '..');
+        app.models.Migration.migrate()
+          .then(function() {
+            self.expectNoUp();
+            self.expectNoDown();
+            done();
+          })
+          .catch(done)
+          .finally(function () {
+            app.models.Migration.migrationsDir = previousDir;
+          });
+      });
       it('should run all migration scripts', function(done) {
         var self = this;
         app.models.Migration.migrate()
