@@ -4,6 +4,7 @@
   "author": {
     "name": "Scott Lively"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/slively/loopback-db-migrate.git"
