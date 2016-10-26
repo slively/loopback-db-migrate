@@ -14,6 +14,7 @@ Down migrations are run in reverse run order.
 Options:
   --datasource specify database name (optional, default: db)
   --since specify date to run migrations from (options, default: run all migrations)
+  --directory specify directory where migration scripts will live (options, default: '/server/migrations/'). A trailing slash is added at the end if not present 
 ```
 
 <h2>Using the CLI directly</h2>
@@ -25,6 +26,11 @@ Run all new migrations that have not previously been run, using datasources.json
 Run all new migrations since 01012014 that have not previously been run, using datasources.json and datasources.qa.json and database 'my_db_name':
 ```javascript
 NODE_ENV=qa ./node_modules/loopback-db-migrate/loopback-db-migrate.js up --datasource my_db_name --since 01012014
+```
+
+Run all migrations living in the '/server/schema-migrations/' directory that have not previously been run, using datasource.json and database 'db'.
+```javascript
+./node_modules/loopback-db-migrate/loopback-db-migrate.js up --directory /server/schema-migrations/
 ```
 
 <h2>Using the CLI with npm by updating your package.json</h2>
