@@ -7,7 +7,8 @@ var fs = require('fs'),
     dbName = (dbNameFlag > -1) ? process.argv[dbNameFlag + 1] : 'db',
     dateSinceFlag = process.argv.indexOf('--since'),
     dateSinceFilter = (dateSinceFlag > -1) ? process.argv[dateSinceFlag + 1] : '',
-    migrationsFolder = process.cwd() + '/server/migrations/',
+    migrationsFolderFlag = process.argv.indexOf('--directory'),
+    migrationsFolder = process.cwd() + ( migrationsFolderFlag > -1 ? process.argv[migrationsFolderFlag + 1].replace(/\/?$/, '/') : '/server/migrations/'),
     dbMigrationsFolder = migrationsFolder+dbName,
     datasource = require(process.cwd() + '/server/server.js').dataSources[dbName];
 
