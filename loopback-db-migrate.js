@@ -91,69 +91,95 @@ function findScriptsToRun(upOrDown, cb) {
     });
 }
 
-function migrateScripts(upOrDown) {
-    return function findAndRunScripts() {
-        findScriptsToRun(upOrDown, function runScripts(scriptsToRun) {
-            var migrationCallStack = [],
-                migrationCallIndex = 0;
+function series(tasks, cb) {
 
-            scriptsToRun.forEach(function (localScriptName) {
-                migrationCallStack.push(function () {
+  if (!Array.isArray(tasks) || !tasks || tasks.length <= 0) {
+    return process.nextTick(cb); 
+  }
 
-                    // keep calling scripts recursively until we are done, then exit
-                    function runNextScript(err) {
-                        if (err) {
-                            console.log('Error saving migration', localScriptName, 'to database!');
-                            console.log(err.stack);
-                            process.exit(1);;
-                        }
-
-                        console.log(localScriptName, 'finished sucessfully.');
-                        migrationCallIndex++;
-                        if (migrationCallIndex < migrationCallStack.length) {
-                            migrationCallStack[migrationCallIndex]();
-                        } else {
-                            process.exit();
-                        }
-                    }
-
-                    try {
-                        // include the script, run the up/down function, update the migrations table, and continue
-                        console.log(localScriptName, 'running.');
-                        require(dbMigrationsFolder + '/' + localScriptName)[upOrDown](datasource, function (err) {
-                            if (err) {
-                                console.log(localScriptName, 'error:');
-                                console.log(err.stack);
-                                process.exit(1);
-                            } else if (upOrDown === 'up') {
-                                datasource.models.Migration.create({
-                                    name: localScriptName,
-                                    db: dbName,
-                                    runDtTm: new Date()
-                                }, runNextScript);
-                            } else {
-                                datasource.models.Migration.destroyAll({
-                                    name: localScriptName
-                                }, runNextScript);
-                            }
-                        });
-                    } catch (e) {
-                        console.log('Error running migration', localScriptName);
-                        console.log(e.stack);
-                        process.exit(1);
-                    }
-                });
-            });
-
-            // kick off recursive calls
-            if (migrationCallStack.length) {
-                migrationCallStack[migrationCallIndex]();
-            } else {
-                console.log('No new migrations to run.');
-                process.exit();
-            }
-        });
+  var total = tasks.length;
+  var current = 0;
+  var results = [];
+  var iterate = function (err, result) {
+    if (err) {
+      return cb(err); 
     }
+    results[current] = result;
+    if (++current >= total) {
+      return cb(null, results); 
+    } 
+    var task = tasks[current];
+    task(iterate);
+  };
+
+  tasks[current](iterate);
+}
+
+function eachSeries(arr, fn, done) {
+  var tasks = arr.map(function (el) {
+    return function (cb) {
+      fn(el, cb); 
+    }; 
+  });
+  series(tasks, done);
+}
+
+function migrateScript(upOrDown) { 
+  return function (localScriptName, cb) {
+    // include the script, run the up/down function, update the migrations table, and continue
+    console.log(localScriptName, 'running.');
+    var next = function (err) {
+      if (err) {
+        console.log('Error saving migration', localScriptName, 'to database!');
+      }
+      cb(err); 
+    };
+
+    try {
+      require(dbMigrationsFolder + '/' + localScriptName)[upOrDown](datasource, function (err) {
+        if (err) {
+          console.log(localScriptName, 'error:');
+          console.log(err.stack);
+          return cb(err);
+        } 
+
+        if (upOrDown === 'up') {
+          var migration = {
+            name: localScriptName,
+            db: dbName,
+            runDtTm: new Date()
+          };
+          datasource.models.Migration.create(migration, next);
+        } else {
+          datasource.models.Migration.destroyAll({
+            name: localScriptName
+          }, next);
+        }
+      });
+    } 
+    catch (e) {
+      console.log('Error running migration', localScriptName);
+      process.nextTick(function () {
+        cb(e);
+      });
+    }
+  };
+}
+
+function migrateScripts(upOrDown) {
+  return function findAndRunScripts() {
+    findScriptsToRun(upOrDown, function runScripts(scriptsToRun) {
+      eachSeries(scriptsToRun, migrateScript(upOrDown), function (err, results) {
+        if (err) {
+          console.log('Error during migration proccess'); 
+          console.log(err.stack);
+          return process.exit(1);
+        }
+        console.log('No new migrations to run.');
+        process.exit();
+      });
+    });
+  };
 }
 
 function stringifyAndPadLeading(num) {
