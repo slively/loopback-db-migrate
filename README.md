@@ -1,3 +1,6 @@
+<h2>No Longer maintained, if you want to take this over, create an issue and we can transfer ownership</h2>
+
+
 A library to add simple database migration support to loopback projects.
 Migrations that have been run will be stored in a table called 'Migrations'.
 The library will read the loopback datasources.json files based on the NODE_ENV environment variable just like loopback does.
