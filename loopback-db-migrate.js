@@ -98,7 +98,7 @@ function waitForAppToBeBooted(done) {
   let internalId;
   let count = 0;
 
-  internalId = setInterval(async () => {
+  internalId = setInterval(() => {
     count += INTERVAL;
 
     if (!app.booting) {
