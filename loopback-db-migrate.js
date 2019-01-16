@@ -94,7 +94,7 @@ function findScriptsToRun(upOrDown, cb) {
 
 function waitForAppToBeBooted(done) {
   const INTERVAL = 50;
-  const TIMEOUT = 1000;
+  const TIMEOUT = 3 * 1000;
   let internalId;
   let count = 0;
 
@@ -108,7 +108,7 @@ function waitForAppToBeBooted(done) {
 
     if (count >= TIMEOUT) {
       clearInterval(internalId);
-      return done(new Error());
+      return done(new Error('loopback application took too long to boot up. Timing out...'));
     }
   }, INTERVAL);
 }
@@ -116,7 +116,12 @@ function waitForAppToBeBooted(done) {
 function migrateScripts(upOrDown) {
   return function findAndRunScripts() {
     findScriptsToRun(upOrDown, function runScripts(scriptsToRun) {
-      waitForAppToBeBooted(function (){
+      waitForAppToBeBooted(function (err){
+        if (err) {
+          console.log(err);
+          process.exit(1);
+        }
+        
         var migrationCallStack = [],
           migrationCallIndex = 0;
 
