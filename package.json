@@ -1,5 +1,5 @@
 {
-  "name": "loopback-db-migrate",
+  "name": "@checkit/loopback-db-migrate",
   "version": "0.0.3",
   "author": {
     "name": "Scott Lively"
@@ -7,16 +7,16 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/slively/loopback-db-migrate.git"
+    "url": "https://github.com/elektron-technologu/loopback-db-migrate.git"
   },
   "main": "./loopback-db-migrate.js",
   "bin": {
     "loopback-db-migrate": "./loopback-db-migrate.js"
   },
   "bugs": {
-    "url": "https://github.com/slively/loopback-db-migrate/issues"
+    "url": "https://github.com/elektron-technologu/loopback-db-migrate/issues"
   },
-  "homepage": "https://github.com/slively/loopback-db-migrate",
+  "homepage": "https://github.com/elektron-technologu/loopback-db-migrate",
   "dependencies": {
     "cli-prompt": "^0.4.1"
   }
